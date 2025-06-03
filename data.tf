@@ -10,3 +10,13 @@ data "vcd_catalog" "catalogs" {
 
   depends_on = [ module.vcd_catalog ]
 }
+
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# EDGE GATEWAY
+
+data "vcd_nsxt_edgegateway" "this" {
+  name         = var.vcd_edge_gateway
+  org          = var.vcd_org
+  vdc_group    = var.vcd_vdc_group
+}

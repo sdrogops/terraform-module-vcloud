@@ -98,3 +98,15 @@ variable "catalog_vapp_template" {
   }))
 }
 
+# -------------------------------------------------------------------------------------------------------------------------------
+
+# IP SETS
+
+variable "ip_sets" {
+  description = "Mappa degli IP Set da creare"
+  type        = map(object({
+    name = string
+    description = string
+    ip_addresses = list(string)
+  }))
+}
