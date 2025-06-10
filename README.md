@@ -57,3 +57,23 @@ Apply the configuration:
 terraform apply
 ```
 
+
+<!-- BEGIN_TF_DOCS -->
+
+
+## Usage
+
+```hcl
+module "vcloud" {
+  source = "github.com/your-org/terraform-module-vcloud"
+  
+  # vCD connection
+  vcd_user     = "your-username"
+  vcd_password = "your-password"
+  vcd_org      = "your-org"
+  vcd_url      = "https://your-vcd-url.com/api"
+  vcd_vdc      = "your-vdc"
+  
+  # Add your configuration here
+}
+<!-- END_TF_DOCS -->
