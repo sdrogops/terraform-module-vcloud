@@ -27,18 +27,18 @@ variable "vcd_allow_unverified_ssl" {
 }
 
 variable "vcd_org" {
-    description = "vCloud Org"
-    type           = string
+  description = "vCloud Org"
+  type        = string
 }
 
 variable "vcd_edge_gateway" {
-    description = "vCloud Edge Gateway Name"
-    type           = string
+  description = "vCloud Edge Gateway Name"
+  type        = string
 }
 
 variable "vcd_vdc_group" {
-    description = "vCloud Datacenter Group Name"
-    type           = string
+  description = "vCloud Datacenter Group Name"
+  type        = string
 }
 
 #-------------------------------------------------------------------------------------------------------------------------------#
@@ -48,13 +48,31 @@ variable "vcd_vdc_group" {
 variable "distributed_firewall_rules" {
   description = "Mappa delle regole firewall"
   type = map(object({
-    name            = string
-    action          = string
-    source_ids      = optional(list(string))
-    destination_ids = optional(list(string))
+    name                 = string
+    action               = string
+    source_ids           = optional(list(string))
+    destination_ids      = optional(list(string))
     app_port_profile_ids = optional(list(string))
-    enabled         = bool
+    enabled              = bool
+
+    # campi opzionali: chi non li passa non vede alcuna differenza
+    description = optional(string) # non mostrato in UI, leggibile via API
+    comment     = optional(string) # mostrato in UI (VCD 10.3.2+)
+    logging     = optional(bool)   # log degli hit sulla regola
+    direction   = optional(string) # IN | OUT | IN_OUT (default IN_OUT)
+    ip_protocol = optional(string) # IPV4 | IPV6 | IPV4_IPV6
   }))
+}
+
+variable "above_rule_id" {
+  description = <<-EOT
+    ID di una regola esistente sopra la quale inserire tutte le regole di
+    questo modulo. Senza questo valore le regole nascono in FONDO alla policy,
+    quindi sotto la default rule del VDC Group: se la default e' in DROP le
+    regole non vengono mai valutate.
+  EOT
+  type        = string
+  default     = null
 }
 
 #-------------------------------------------------------------------------------------------------------------------------------#

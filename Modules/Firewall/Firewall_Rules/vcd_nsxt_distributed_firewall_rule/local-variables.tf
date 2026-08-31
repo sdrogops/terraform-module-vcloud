@@ -1,13 +1,17 @@
 locals {
-  scope        = "TENANT"
-  ip_protocol  = "IPV4"
+  scope       = "TENANT"
+  ip_protocol = "IPV4"
 
   distributed_firewall_rules = {
     for k, v in var.distributed_firewall_rules : k => {
       name        = v.name
       action      = v.action
-      ip_protocol = local.ip_protocol
       enabled     = v.enabled
+      ip_protocol = coalesce(v.ip_protocol, local.ip_protocol)
+      direction   = coalesce(v.direction, "IN_OUT")
+      description = v.description
+      comment     = v.comment
+      logging     = coalesce(v.logging, false)
 
       source_ids = try(
         [for src in v.source_ids : var.ip_sets_ids[src]],
