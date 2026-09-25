@@ -1,0 +1,73 @@
+{
+  "strictness": 2,
+  "commentTypes": [
+    "logic",
+    "syntax"
+  ],
+  "autoReview": [
+    "open",
+    "push"
+  ],
+  "triggerOnDrafts": false,
+  "statusCheck": true,
+  "excludeAuthors": [
+    "mend-renovate-selfhosted[bot]",
+    "renovate[bot]",
+    "dependabot[bot]",
+    "github-actions[bot]"
+  ],
+  "excludeBranches": [
+    "renovate/**"
+  ],
+  "instructions": "Terraform modules for VMware Cloud Director with NSX-T (catalogs, routed networks, DHCP, VMs, edge and distributed firewall, NAT, IPsec). Review priorities: (1) fail-open firewall logic: a firewall rule whose source, destination or application list ends up empty is interpreted by NSX-T as 'Any', so any lookup that can silently return an empty list is a security bug; (2) destructive plans: force-new attribute changes, for_each key changes, renamed modules or map keys without a moved {} block; (3) network exposure: ALLOW rules with Any source/destination, 0.0.0.0/0 in IP sets or NAT rules, DNAT to management ports; (4) secrets: API tokens and passwords must be sensitive variables and never committed in tfvars or examples; (5) the vmware/vcd provider version is pinned identically in every module and must stay consistent. Do not comment on formatting or style.",
+  "customContext": {
+    "rules": [
+      {
+        "rule": "IP set and app port profile names are resolved to IDs with try([for x in list : var.map[x]], []). A misspelled or missing name makes the whole list empty, which NSX-T treats as 'Any', so the rule silently allows everything. New or changed lookups must fail the plan (precondition or direct index without try) instead of falling back to an empty list.",
+        "scope": [
+          "Modules/Firewall/Firewall_Rules/**"
+        ]
+      },
+      {
+        "rule": "Distributed firewall rules are created at the bottom of the policy, below the VDC group default rule, unless above_rule_id is set; if the default rule is DROP the new rules are never evaluated. Check that changes keep above_rule_id wired through and do not rely on implicit ordering. Because rule position depends on creation order, applies touching DFW rules must run with -parallelism=1.",
+        "scope": [
+          "Modules/Firewall/Firewall_Rules/vcd_nsxt_distributed_firewall_rule/**",
+          "main.tf",
+          "variables.tf"
+        ]
+      },
+      {
+        "rule": "Flag NAT (DNAT/SNAT/NO-SNAT) and edge firewall changes that expose internal addresses or management ports (22, 3389, 443 of management UIs) to external networks.",
+        "scope": [
+          "Modules/Firewall/NAT/**",
+          "Modules/Firewall/Firewall_Rules/vcd_nsxt_firewall/**"
+        ]
+      },
+      {
+        "rule": "IPsec tunnels: pre-shared keys must never be literals in code or examples, and any variable that carries pre_shared_key must be marked sensitive = true. Flag weak or default IKE/tunnel security profiles.",
+        "scope": [
+          "Modules/Firewall/IPsec/**"
+        ]
+      },
+      {
+        "rule": "VM changes to template, sizing policy, storage profile, network or IP allocation can force replacement of running VMs and must be called out explicitly.",
+        "scope": [
+          "Modules/VM/**",
+          "Modules/Catalog/**"
+        ]
+      },
+      {
+        "rule": "Every module declares required_providers with vmware/vcd pinned to the same exact version as the root main.tf. Flag drift between modules or unpinned constraints.",
+        "scope": [
+          "**/*.tf"
+        ]
+      }
+    ],
+    "files": [
+      {
+        "path": "README.md",
+        "description": "Provider variables and usage"
+      }
+    ]
+  }
+}
